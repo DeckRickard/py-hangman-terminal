@@ -1,5 +1,9 @@
 # Multiplayer hangman game: A Terminal game created by Rowan Jeffery-Wall as part of the CodeCademy Computer Science Career Path. This is a hangman game that can be played alone or with up to 6 players.
 import random
+# Local word bank file is read and used to create a list of words for the AI to use.
+with open('words.csv') as word_bank:
+    raw_text = word_bank.read()
+    words_list = raw_text.split(',')
 
 
 # The player class is used to keep track of player details
@@ -11,6 +15,9 @@ class Player:
 
     def __repr__(self):
         return "A player called {name}. They have won {games_won} games".format(name=self.name, games_won=self.games_won)
+    
+    def winner(self):
+        self.games_won += 1
     
 # Initial variables are defined here.
 title = """
@@ -28,7 +35,6 @@ title = """
 """
 
 num_players_valid = False
-vs_AI = False
 
 # Functions are defined here.
 
