@@ -4,7 +4,10 @@ import string
 # Local word bank file is read and used to create a list of words for the AI to use.
 with open('words.csv') as word_bank:
     raw_text = word_bank.read()
-    words_list = raw_text.split(',')
+    words_list_raw = raw_text.split(',')
+    words_list = []
+    for word in words_list_raw:
+        words_list.append(word.strip())
 
 
 # The player class is used to keep track of player details
@@ -37,6 +40,70 @@ title = """
 
 num_players_valid = False
 alphabet = set(string.ascii_uppercase) # A set containing all letters of the alphabet in uppercase.
+gallows = {6: """
+        --------
+        |      |
+        |
+        |
+        |
+        |
+        _______
+        """,
+        5: """
+        --------
+        |      |
+        |      O
+        |
+        |
+        |
+        _______
+        """,
+        4: """
+        --------
+        |      |
+        |      O
+        |      |
+        |
+        |
+        _______
+        """,
+        3: """
+        --------
+        |      |
+        |      O
+        |     /|
+        |
+        |
+        _______
+        """,
+        2: """
+        --------
+        |      |
+        |      O
+        |     /|\\
+        |
+        |
+        _______
+        """,
+        1: """
+        --------
+        |      |
+        |      O
+        |     /|\\
+        |     /
+        |
+        _______
+        """,
+        0:"""
+        --------
+        |      |
+        |      O
+        |     /|\\
+        |     /\\
+        |
+        _______
+        """
+        }
 
 # Functions are defined here.
 
@@ -75,6 +142,7 @@ def game(player, word):
 
         word_list = [letter if letter in used_letters else '-' for letter in word] # Create a list of letters in the word, showing only those that have been correctly guessed to the user.
         print("Current guesses: ", ' '.join(word_list))
+        print(render_gallows(lives))
         
         user_letter = input("Guess a letter:").upper()
         if user_letter in alphabet - used_letters:
@@ -92,15 +160,28 @@ def game(player, word):
             print("This isn't a valid character. Try again.")
 
     if len(word_letters) == 0:
-        print(f"Congratulations, you have guessed the word, it was: {word.lower()}")
+        print(f"Congratulations, you have guessed the word, it was: {word.lower()}. {player.name} gains a point.")
+        player.winner()
+        play_again()
     
     else:
+        print(gallows[0])
         print(f"Sorry, you ran out of lives. The word was: {word.lower()}")
+        play_again()
         
 
+def play_again(): #Only used in singleplayer games
+    if input("Play again? 'y' for yes and 'n' for no:").lower()[0] == 'y':
+        single_player_game_init(players_dict["player1"])
+    
+    return
+
+def render_gallows(lives):
+    return gallows[lives]
 
     
 # Main program code from here below.
+print(words_list)
 print(title)
 num_players = input("How many players will there be? The maximum is 6 players: ")
 while not check_num_players(num_players):
