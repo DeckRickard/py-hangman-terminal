@@ -114,6 +114,12 @@ def check_num_players(input):
     else:
         return False
     
+def check_word(word):
+    for letter in word:
+        if not letter.isalpha():
+            return False
+    return True
+    
 # This function handles the creation of players depending on the number that was inputted by the user.
 def create_players(number):
     players = {}
@@ -125,14 +131,26 @@ def single_player_game_init(player):
     print(f"Welcome {player.name} You will be playing against the AI today. They will think of a word and you will guess it.")
     # The program chooses a random word from the supplied word bank and converts it to uppercase.
     word = random.choice(words_list).upper()
-    game(player, word)    
+    game(player, word, True)    
 
 
 def multiplayer_game_init(players):
-    pass
+    
+    print("In a multiplayer game, each player will have a turn to come up with a word, and the other players will work as a team to guess the word. If you can't guess the word, the player that came up with the word will get a point.")
+    # Each player is cycled through and given a chance to guess word.
+    for i in range(0, len(players)):
+        player_name = players[f"player{i + 1}"].name
+        print(f"{player_name} will choose a word.")
+        word = input("Come up with a word. no spaces or numbers: ")
+        while not check_word(word):
+            word = input("Invalid word entered. Try again: ")
+        game(players[f"player{i + 1}"], word.upper(), False)
+    print_scores(players)
+    play_again(False)
+    
 
 # This function contains the main game logic, whether single or multiplayer.
-def game(player, word):
+def game(player, word, vs_AI):
     word_letters = set(word)
     used_letters = set()
     lives = 6
@@ -143,6 +161,9 @@ def game(player, word):
         word_list = [letter if letter in used_letters else '-' for letter in word] # Create a list of letters in the word, showing only those that have been correctly guessed to the user.
         print("Current guesses: ", ' '.join(word_list))
         print(render_gallows(lives))
+
+        if vs_AI == True:
+            print("The other players will take turns to guess letters.")
         
         user_letter = input("Guess a letter:").upper()
         if user_letter in alphabet - used_letters:
@@ -160,24 +181,39 @@ def game(player, word):
             print("This isn't a valid character. Try again.")
 
     if len(word_letters) == 0:
-        print(f"Congratulations, you have guessed the word, it was: {word.lower()}. {player.name} gains a point.")
-        player.winner()
-        play_again()
+        if vs_AI:
+            print(f"Congratulations, you have guessed the word, it was: {word.lower()}. {player.name} gains a point.")
+            player.winner()
+            play_again(True)
+        else:
+            print(f"The other players guessed {player.name}'s word. {player.name} doesn't score.")
     
     else:
         print(gallows[0])
         print(f"Sorry, you ran out of lives. The word was: {word.lower()}")
-        play_again()
+        if vs_AI:
+            play_again(True)
+        else:
+            print(f"The word was {word.lower()}. {player.name} came up with a word that you couldn't guess! They get a point.")
+            player.winner()
+        
         
 
-def play_again(): #Only used in singleplayer games
+def play_again(singleplayer): 
     if input("Play again? 'y' for yes and 'n' for no:").lower()[0] == 'y':
-        single_player_game_init(players_dict["player1"])
+        if singleplayer:
+            single_player_game_init(players_dict["player1"])
+        else:
+            multiplayer_game_init(players_dict)
     
     return
 
 def render_gallows(lives):
     return gallows[lives]
+
+def print_scores(players):
+    for player in players.values():
+        print(f"{player.name} has {player.games_won} points.")
 
     
 # Main program code from here below.
